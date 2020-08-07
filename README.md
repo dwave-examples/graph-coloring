@@ -120,3 +120,18 @@ With a Lagrange penalty of 3, the quadratic dictionary is given by
 ...
 
 You can see that there will be 16 rows for each edge in the problem graph.
+
+## Code Specifics
+
+Let's go through the sections of code in the graph coloring problem:
+
+* Define the graph
+* Define the linear bias dictionary. The gradient method is used to implement the condition described above, of penalizing color k by bias k.
+* Define the connectivity dictionary, which is the edges of the graph
+* Define the quadratic dictionary. For each (node1, node2) edge in the graph, define the 16 color combinations, and penalize only the cases which have the same color.
+* Solve the problem using the DQM client
+* Check that the solution is valid - nodes connected by edges should have different colors.
+
+## License
+
+Released under the Apache License 2.0. See [LICENSE](LICENSE) file.
