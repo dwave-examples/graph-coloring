@@ -31,13 +31,20 @@ G = nx.Graph()
 G.add_edges_from([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (0, 6)])
 n_edges = len(G)
 
-# Load the DQM. Define the variables, and then set quadratic weights.
-# No biases necessary because we don't care what the colors are, as long as
-# they are different at the edges.
+# initial value of Lagrange parameter
+lagrange = max(colors)
+
+# Load the DQM. Define the variables, and then set biases and weights.
+# We set the linear biases to favor lower-numbered colors; this will
+# have the effect of minimizing the number of colors used.
+# We penalize edge connections by the Lagrange parameter, to encourage
+# connected nodes to have different colors.
 for p in G.nodes:
     dqm.add_variable(4, label=p)
+for p in G.nodes:
+    dqm.set_linear(p, colors)
 for p0, p1 in G.edges:
-    dqm.set_quadratic(p0, p1, {(c, c): 1 for c in colors})
+    dqm.set_quadratic(p0, p1, {(c, c): lagrange for c in colors})
 
 # Initialize the DQM solver
 sampler = LeapHybridDQMSampler(profile='dqm_test')
@@ -48,7 +55,6 @@ sampleset = sampler.sample_dqm(dqm)
 # get the first solution, and print it
 sample = sampleset.first.sample
 energy = sampleset.first.energy
-print(sample, energy)
 
 # check that colors are different
 valid = True
