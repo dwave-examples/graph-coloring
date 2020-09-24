@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import networkx as nx
-import numpy as np
 from dimod import DiscreteQuadraticModel
 from dwave.system import LeapHybridDQMSampler
 
@@ -23,7 +22,7 @@ from dwave.system import LeapHybridDQMSampler
 # the four-color theorem indicates that four colors suffice for any planar
 # graph
 num_colors = 4
-colors = np.linspace(0, num_colors - 1, num_colors)
+colors = range(num_colors)
 
 # Initialize the DQM object
 dqm = DiscreteQuadraticModel()
