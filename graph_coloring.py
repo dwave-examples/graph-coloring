@@ -47,7 +47,7 @@ for p0, p1 in G.edges:
     dqm.set_quadratic(p0, p1, {(c, c): lagrange for c in colors})
 
 # Initialize the DQM solver
-sampler = LeapHybridDQMSampler(profile='dqm_test')
+sampler = LeapHybridDQMSampler()
 
 # Solve the problem using the DQM solver
 sampleset = sampler.sample_dqm(dqm)
