@@ -13,59 +13,42 @@
 # limitations under the License.
 
 import networkx as nx
-from dqmclient import solve
 import numpy as np
+from dimod import DiscreteQuadraticModel
+from dwave.system import LeapHybridDQMSampler
 
 # Graph coloring with DQM solver
 
 # input: number of colors in the graph
 num_colors = 4
+colors = np.linspace(0, num_colors - 1, num_colors)
+
+# Initialize the DQM object
+dqm = DiscreteQuadraticModel()
 
 # Make Networkx graph of a hexagon
 G = nx.Graph()
 G.add_edges_from([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (0, 6)])
 n_edges = len(G)
 
-# initial setup of linear list
-linear = [(i, j, 0) for i in range(n_edges) for j in range(num_colors)]
+# Load the DQM. Define the variables, and then set quadratic weights.
+# No biases necessary because we don't care what the colors are, as long as
+# they are different at the edges.
+for p in G.nodes:
+    dqm.add_variable(4, label=p)
+for p0, p1 in G.edges:
+    dqm.set_quadratic(p0, p1, {(c, c): 1 for c in colors})
 
-# introduce ability to refer to variables by name, and make the third
-# variable float
-linear = np.asarray(linear, dtype=[('v', np.intc), ('case', np.intc),
-                    ('bias', np.float)])
+# Initialize the DQM solver
+sampler = LeapHybridDQMSampler(profile='dqm_test')
 
-# the gradient will be used as the bias. Start at zero and go up to the
-# number of colors, in steps. This will favor lowest-numbered colors and
-# penalize higher-numbered colors. We're assuming a linear relationship
-# as a first guess.
-gradient = np.linspace(0, num_colors - 1, num_colors)
-linear['bias'] = np.tile(gradient, n_edges)
+# Solve the problem using the DQM solver
+sampleset = sampler.sample_dqm(dqm)
 
-# define the connectivity dict as the graph
-connectivity = np.asarray(G.edges, dtype=[('u', np.intc), ('v', np.intc)])
-
-# initial value of Lagrange parameter
-lagrange = max(gradient)
-
-# We use an identity matrix to help set up the quadratic. Whenever
-# (node, color) is the same - the on-diagonal terms - we penalize it with
-# strength 'lagrange'.
-# All other terms are zero.
-coloring_objective = np.eye(num_colors).reshape([-1]) * lagrange
-quadratic = np.tile(coloring_objective, len(connectivity))
-
-# DQM solver parameters
-num_reads = 10
-num_sweeps = 10
-
-# use dqmclient's solve to get to the solver
-sampleset = solve(linear, connectivity, quadratic,
-                  num_reads=num_reads, num_sweeps=num_sweeps,
-                  profile='dqm_prod', connection_close=True)
-
-# get the first solution
+# get the first solution, and print it
 sample = sampleset.first.sample
 energy = sampleset.first.energy
+print(sample, energy)
 
 # check that colors are different
 valid = True
