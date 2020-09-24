@@ -20,6 +20,8 @@ from dwave.system import LeapHybridDQMSampler
 # Graph coloring with DQM solver
 
 # input: number of colors in the graph
+# the four-color theorem indicates that four colors suffice for any planar
+# graph
 num_colors = 4
 colors = np.linspace(0, num_colors - 1, num_colors)
 
@@ -29,7 +31,7 @@ dqm = DiscreteQuadraticModel()
 # Make Networkx graph of a hexagon
 G = nx.Graph()
 G.add_edges_from([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (0, 6)])
-n_edges = len(G)
+n_edges = len(G.edges)
 
 # initial value of Lagrange parameter
 lagrange = max(colors)
@@ -40,7 +42,7 @@ lagrange = max(colors)
 # We penalize edge connections by the Lagrange parameter, to encourage
 # connected nodes to have different colors.
 for p in G.nodes:
-    dqm.add_variable(4, label=p)
+    dqm.add_variable(num_colors, label=p)
 for p in G.nodes:
     dqm.set_linear(p, colors)
 for p0, p1 in G.edges:
