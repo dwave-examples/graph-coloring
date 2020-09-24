@@ -31,14 +31,12 @@ and when we draw it:
 we see that no neighboring nodes have the same color. The validity check checks that that is the case.
 
 ## Code Overview
-
-The Discrete Quadratic Model (DQM) solver accepts problems expressed in terms of three Python dictionaries:
+The Discrete Quadratic Model (DQM) solver accepts problems expressed in terms of a DiscreteQuadraticModel object. The DiscreteModelObject contains two dictionaries:
 
 * linear biases
-* connectivity
 * quadratic couplings
 
-We want to define these three dictionaries so that a low-energy solution found by the DQM solver will correspond to a solution of the graph coloring problem.
+We want to define these two dictionaries so that a low-energy solution found by the DQM solver will correspond to a solution of the graph coloring problem.
 
 For this problem, it is easiest to think in terms of ordered pairs (node, color). We will choose colors numbered from 0 to 3 - since four colors will color any map in a plane. The nodes will be numbered starting from 0 in the code. For example, the pair (1, 2) corresponds to Node 1 and color 2.
 
@@ -58,20 +56,6 @@ We set the linear biases in order to favor the lowest possible color. We assume 
 ...
 
 For 7 nodes, we see that the table in this problem will have 28 rows.
-
-### Connectivity
-
-The connectivity dictionary tells the DQM solver about the edges of the graph. Each row in the table will consist of an ordered pair (Node1, Node2), where (Node1, Node2) is an edge in the graph. For this problem, the connectivity dictionary for the graph is
-
-|Node1|Node2|
-|-----|-----|
-|0|1|
-|0|6|
-|1|2|
-|2|3|
-|3|4|
-|4|5|
-|5|6|
 
 ### Quadratic
 
@@ -125,11 +109,11 @@ You can see that there will be 16 rows for each edge in the problem graph.
 
 Let's go through the sections of code in the graph coloring problem:
 
+* Initialize the DQM object
 * Define the graph
 * Define the linear bias dictionary. The gradient method is used to implement the condition described above, of penalizing color k by bias k.
-* Define the connectivity dictionary, which is the edges of the graph
 * Define the quadratic dictionary. For each (node1, node2) edge in the graph, define the 16 color combinations, and penalize only the cases which have the same color.
-* Solve the problem using the DQM client
+* Solve the problem using the DQM solver
 * Check that the solution is valid - nodes connected by edges should have different colors.
 
 ## License
