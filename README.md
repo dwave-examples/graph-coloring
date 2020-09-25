@@ -69,45 +69,23 @@ An example is that since nodes 0 and 1 have an edge, we do not want both node 0 
 
 To do this, we apply a penalty to all of these combinations, and the penalty's strength is the Lagrange parameter. If the DQM solver does not yield good solutions, we may need to increase the Lagrange parameter.
 
-With a Lagrange penalty of 3, the quadratic dictionary is given by
+The quadratic dictionary will have entries of the form ```(Node1, Color1, Node2, Color2, Penalty)```, and all will be zero except when ```Color1 = Color2```.
+With a Lagrange penalty of 3, the nonzero entries in the quadratic dictionary are:
 
 |Node1|Color1|Node2|Color2|Penalty|
 |-----|------|-----|------|-------|
 |0|0|1|0|3|
-|0|0|1|1|0|
-|0|0|1|2|0|
-|0|0|1|3|0|
-|0|1|1|0|0|
 |0|1|1|1|3|
-|0|1|1|2|0|
-|0|1|1|3|0|
-|0|2|1|0|0|
-|0|2|1|1|0|
 |0|2|1|2|3|
-|0|2|1|3|0|
-|0|3|1|0|0|
-|0|3|1|1|0|
-|0|3|1|2|0|
 |0|3|1|3|3|
 |0|0|6|0|3|
-|0|0|6|1|0|
-|0|0|6|2|0|
-|0|0|6|3|0|
-|0|1|6|0|0|
 |0|1|6|1|3|
-|0|1|6|2|0|
-|0|1|6|3|0|
-|0|2|6|0|0|
-|0|2|6|1|0|
 |0|2|6|2|3|
-|0|2|6|3|0|
-|0|3|6|0|0|
-|0|3|6|1|0|
-|0|3|6|2|0|
 |0|3|6|3|3|
 ...
 
-You can see that there will be 16 rows for each edge in the problem graph.
+You can see that there will be 16 rows, most of them zero, for each edge in 
+the problem graph.
 
 ## Code Specifics
 
