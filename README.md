@@ -67,7 +67,8 @@ The quadratic dictionary tells the DQM solver how to penalize variable combinati
 
 An example is that since nodes 0 and 1 have an edge, we do not want both node 0 and node 1 to have color 0. We also do not want them both to have color 1, or color 2. We see that there are four combinations that we will need to penalize for nodes 0 and 1. Looking at the graph, we see we will need to do the same thing for nodes 0 and 6; and for 1 and 2; and so on.
 
-To do this, we apply a penalty to all of these combinations, and the penalty's strength is the Lagrange parameter. If the DQM solver does not yield good solutions, we may need to increase the Lagrange parameter.
+To do this, we apply a penalty to all of these combinations, and the penalty's strength is the Lagrange parameter. (https://en.wikipedia.org/wiki/Lagrange_multiplier)
+If the DQM solver does not yield good solutions, we may need to increase the Lagrange parameter.
 
 The quadratic dictionary will have entries of the form ```(Node1, Color1, Node2, Color2, Penalty)```, and all will be zero except when ```Color1 = Color2```.
 With a Lagrange penalty of 3, the nonzero entries in the quadratic dictionary are:
