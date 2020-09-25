@@ -26,7 +26,7 @@ for p0, p1 in borders:
     dqm.set_quadratic(p0, p1, {(c, c): 1 for c in colors})
 
 # Initialize the DQM solver
-sampler = LeapHybridDQMSampler(profile='dqm_test')
+sampler = LeapHybridDQMSampler()
 
 # Solve the problem using the DQM solver
 sampleset = sampler.sample_dqm(dqm)
