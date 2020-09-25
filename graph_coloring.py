@@ -64,6 +64,6 @@ for edge in G.edges:
     if sample[i] == sample[j]:
         valid = False
         break
-print("Graph coloring solution: ", sample)
-print("Graph coloring solution energy: ", energy)
-print("Graph coloring solution validity: ", valid)
+print("Solution: ", sample)
+print("Solution energy: ", energy)
+print("Solution validity: ", valid)

@@ -1,12 +1,12 @@
 # DQM and Graph Coloring
 
-A demo of Graph Coloring using the Discrete Quadratic Model (DQM) solver.
+A demo of Graph Coloring using Leap's Discrete Quadratic Model (DQM) solver.
 
 ![Original Plot](readme_imgs/not_color_yet.png)
 
-Figure: The graph that we want to color, so that no neighboring nodes have the same color
+Figure: The graph that we want to color, so that no neighboring nodes have the same color.
 
-We want to color this graph so that no neighboring nodes have the same color. This is a well-known problem which is already in the D-Wave Collection of Examples (https://github.com/dwave-examples/map-coloring) In this repo, we're going to use the D-Wave Discrete Quadratic Model solver.
+We want to color this graph so that no neighboring nodes have the same color. This is a well-known problem (https://en.wikipedia.org/wiki/Graph_coloring) which is already in the D-Wave Collection of Examples (https://github.com/dwave-examples/map-coloring) In this repo, we're going to use the D-Wave DQM solver.
 
 ## Usage
 
@@ -24,23 +24,23 @@ Graph coloring solution energy:  5.0
 Graph coloring solution validity:  True
 ```
 
-and when we draw it:
+and when the solution is drawn:
 
 ![Color Plot](readme_imgs/color.png)
 
 we see that no neighboring nodes have the same color. The validity check checks that that is the case.
 
 ## Code Overview
-The Discrete Quadratic Model (DQM) solver accepts problems expressed in terms of a DiscreteQuadraticModel object. The DiscreteModelObject contains two dictionaries:
+Leap's DQM solver accepts problems expressed in terms of a DiscreteQuadraticModel object. The DiscreteQuadraticModel contains two dictionaries:
 
 * linear biases
-* quadratic couplings
+* quadratic biases
 
 We want to define these two dictionaries so that a low-energy solution found by the DQM solver will correspond to a solution of the graph coloring problem.
 
-For this problem, it is easiest to think in terms of ordered pairs (node, color). We will choose colors numbered from 0 to 3 - since four colors will color any map in a plane. The nodes will be numbered starting from 0 in the code. For example, the pair (1, 2) corresponds to Node 1 and color 2.
+For this problem, it is easiest to think in terms of ordered pairs (node, color). We will choose colors numbered from 0 to 3, since four colors will color any map in a plane. The nodes will be numbered starting from 0 in the code. For example, the pair (1, 2) corresponds to node 1 and color 2.
 
-### Linear biases
+### Linear Biases
 
 We set the linear biases in order to favor the lowest possible color. We assume a very simple relationship: color k will be penalized by an bias k. This will encourage the system to use the lowest numbered colors as much as possible. Here's the table that we use, for this problem:
 
@@ -111,10 +111,10 @@ Let's go through the sections of code in the graph coloring problem:
 
 * Initialize the DQM object
 * Define the graph
-* Define the linear bias dictionary. The gradient method is used to implement the condition described above, of penalizing color k by bias k.
-* Define the quadratic dictionary. For each (node1, node2) edge in the graph, define the 16 color combinations, and penalize only the cases which have the same color.
+* Define the linear bias dictionary. The gradient method is used to implement the condition described above, of penalizing color k by bias k
+* Define the quadratic dictionary. For each (node1, node2) edge in the graph, define the 16 color combinations, and penalize only the cases which have the same color
 * Solve the problem using the DQM solver
-* Check that the solution is valid - nodes connected by edges should have different colors.
+* Check that the solution is valid - nodes connected by edges should have different colors
 
 ## License
 
