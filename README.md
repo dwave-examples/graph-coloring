@@ -42,7 +42,11 @@ For this problem, it is easiest to think in terms of ordered pairs (node, color)
 
 ### Linear Biases
 
-We set the linear biases in order to favor the lowest possible color. We assume a very simple relationship: color k will be penalized by an bias k. This will encourage the system to use the lowest numbered colors as much as possible. Here's the table that we use, for this problem:
+We set the linear biases in order to use as few colors as possible. We assume 
+a very simple relationship: color k will be penalized by an bias k. This will 
+encourage the system to use the lowest numbered colors as much as possible, 
+which will discourage some colors from being used. 
+Here's the table that we use, for this problem:
 
 |Node|Color|Linear Bias|
 |----|-----|-----------|
