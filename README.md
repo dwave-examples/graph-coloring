@@ -19,9 +19,9 @@ python graph_coloring.py
 The program will produce a solution which might look like this:
 
 ```
-Graph coloring solution:  {0: 0, 1: 1, 2: 2, 3: 0, 4: 1, 5: 0, 6: 1}
-Graph coloring solution energy:  5.0
-Graph coloring solution validity:  True
+Solution:  {0: 0, 1: 1, 2: 2, 3: 0, 4: 1, 5: 0, 6: 1}
+Solution energy:  5.0
+Solution validity:  True
 ```
 
 and when the solution is drawn:
