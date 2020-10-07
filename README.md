@@ -1,6 +1,6 @@
-# DQM and Graph Coloring
+# Graph Coloring
 
-A demo of Graph Coloring using Leap's Discrete Quadratic Model (DQM) solver.
+A demo of graph coloring using Leap's hybrid discrete quadratic model (DQM) solver.
 
 ![Original Plot](readme_imgs/not_color_yet.png)
 
