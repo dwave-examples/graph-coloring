@@ -22,7 +22,7 @@ project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class IntegrationTests(unittest.TestCase):
 
-    def test_sudoku(self):
+    def test_graph_coloring(self):
         example_file = os.path.join(project_dir, 'graph_coloring.py')
         output = subprocess.check_output([sys.executable, example_file])
         output = str(output).upper()
