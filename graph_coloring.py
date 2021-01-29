@@ -51,7 +51,7 @@ for p0, p1 in G.edges:
 sampler = LeapHybridDQMSampler()
 
 # Solve the problem using the DQM solver
-sampleset = sampler.sample_dqm(dqm)
+sampleset = sampler.sample_dqm(dqm, label='Example - Graph Coloring')
 
 # get the first solution, and print it
 sample = sampleset.first.sample

@@ -29,7 +29,7 @@ for p0, p1 in borders:
 sampler = LeapHybridDQMSampler()
 
 # Solve the problem using the DQM solver
-sampleset = sampler.sample_dqm(dqm)
+sampleset = sampler.sample_dqm(dqm, label='Example - Map Coloring')
 
 # get the first solution, and print it
 sample = sampleset.first.sample
