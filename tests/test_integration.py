@@ -29,8 +29,6 @@ class IntegrationTests(unittest.TestCase):
         if os.getenv('DEBUG_OUTPUT'):
             print("Example output \n" + output)
 
-        with self.subTest(msg="Verify if output contains valid solution energy:  5.0' \n"):
-            self.assertIn("Solution energy:  5.0".upper(), output)
         with self.subTest(msg="Verify if solution validity:  True \n"):
             self.assertIn("Solution validity:  True".upper(), output)
 
