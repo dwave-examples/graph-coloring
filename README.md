@@ -6,7 +6,7 @@ A demo of graph coloring using Leap's hybrid discrete quadratic model (DQM) solv
 
 Figure: The graph that we want to color, so that no neighboring nodes have the same color.
 
-We want to color this graph so that no neighboring nodes have the same color. This is a well-known problem (https://en.wikipedia.org/wiki/Graph_coloring) which is already in the D-Wave Collection of Examples (https://github.com/dwave-examples/map-coloring) In this repo, we're going to use the D-Wave DQM solver.
+We want to color this graph so that no neighboring nodes have the same color. This is a well-known problem (https://en.wikipedia.org/wiki/Graph_coloring) which is already in the D-Wave Collection of Examples (https://github.com/dwave-examples/map-coloring). In this repo, we're going to use the D-Wave DQM solver.
 
 ## Usage
 

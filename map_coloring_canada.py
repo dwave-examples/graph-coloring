@@ -10,30 +10,21 @@ from dwave.system import LeapHybridDQMSampler
 
 def build_map(shp_file):
 
-    print("\nBuilding USA map...")
+    print("\nBuilding Canada map...")
 
     states = geopandas.read_file(shp_file)
-
-    non_contiguous_states = ['Alaska', 'Puerto Rico', 'Hawaii']
-
-    non_cont_indices = states.index[(states['NAME'] == 'Alaska') | (states['NAME'] == 'Puerto Rico') | (states['NAME'] == 'Hawaii')].tolist()
-
-    states.drop(non_cont_indices, inplace=True)
-
-    # states.plot()
-    # plt.show()
 
     state_neighbors = defaultdict(list)
     for _, state in states.iterrows():   
 
         # get 'not disjoint' states
-        neighbors = states[~states.geometry.disjoint(state.geometry)].NAME.tolist()
+        neighbors = states[~states.geometry.disjoint(state.geometry)].PRNAME.tolist()
 
         # remove own name of the state from the list
-        neighbors = [ name for name in neighbors if state.NAME != name ]
+        neighbors = [ name for name in neighbors if state.PRNAME != name ]
         
         # add entry to dictionary
-        state_neighbors[state['NAME']] = neighbors
+        state_neighbors[state['PRNAME']] = neighbors
 
     return states, state_neighbors
 
@@ -91,7 +82,7 @@ def run_hybrid_solver(dqm):
     sampler = LeapHybridDQMSampler()
 
     # Solve the problem using the DQM solver
-    sampleset = sampler.sample_dqm(dqm, label='Example - USA Map Coloring')
+    sampleset = sampler.sample_dqm(dqm, label='Example - CN Map Coloring')
 
     return sampleset
 
@@ -104,19 +95,19 @@ def draw_sample(sample, states):
     states['COLOR'] = color_column
 
     for key, val in sample.items():
-        row = states.index[states['NAME'] == key]
+        row = states.index[states['PRNAME'] == key]
         states.at[row, 'COLOR'] = val
 
     states.plot(column='COLOR')
     plt.axis('off')
-    plt.savefig("result_usa.png")
+    plt.savefig("result_canada.png")
 
     return
 
 # ------- Main program -------
 if __name__ == "__main__":
 
-    input_shp_file = 'shp_files/cb_2018_us_state_20m/cb_2018_us_state_20m.shp'
+    input_shp_file = 'shp_files/gpr_000b11a_e/gpr_000b11a_e.shp'
 
     states, state_neighbors = build_map(input_shp_file)
 
