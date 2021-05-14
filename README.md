@@ -16,19 +16,9 @@ To run the graph coloring demo:
 python graph_coloring.py
 ```
 
-The program will produce a solution which might look like this:
-
-```
-Solution:  {0: 0, 1: 1, 2: 2, 3: 0, 4: 1, 5: 0, 6: 1}
-Solution energy:  5.0
-Solution validity:  True
-```
-
-and when the solution is drawn:
+The program will print out the number of colors used and whether or not the solution is valid, and produce an image of the solution saved as `result_graph.png`.
 
 ![Color Plot](readme_imgs/color.png)
-
-we see that no neighboring nodes have the same color. The validity check checks that that is the case.
 
 Also included are two map coloring demos, `map_coloring_usa.py` and `map_coloring_canada.py`. Each map coloring demo produces an output image file as shown below.
 
