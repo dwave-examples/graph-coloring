@@ -10,7 +10,7 @@ We want to color this graph so that no neighboring nodes have the same color. Th
 
 ## Usage
 
-To run the demo:
+To run the graph coloring demo:
 
 ```bash
 python graph_coloring.py
@@ -29,6 +29,10 @@ and when the solution is drawn:
 ![Color Plot](readme_imgs/color.png)
 
 we see that no neighboring nodes have the same color. The validity check checks that that is the case.
+
+Also included are two map coloring demos, `map_coloring_usa.py` and `map_coloring_canada.py`. Each map coloring demo produces an output image file as shown below.
+
+![USA Map](readme_imgs/result_usa.png)
 
 ## Code Overview
 Leap's DQM solver accepts problems expressed in terms of a DiscreteQuadraticModel object. The DiscreteQuadraticModel contains two dictionaries:
