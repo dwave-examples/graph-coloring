@@ -15,21 +15,25 @@
 import networkx as nx
 from dimod import DiscreteQuadraticModel
 from dwave.system import LeapHybridDQMSampler
+import matplotlib.pyplot as plt
 
 # Graph coloring with DQM solver
 
 # input: number of colors in the graph
 # the four-color theorem indicates that four colors suffice for any planar
 # graph
-num_colors = 4
+
+print("\nSetting up graph...")
+num_colors = 7
 colors = range(num_colors)
 
-# Initialize the DQM object
-dqm = DiscreteQuadraticModel()
+# Make networkx graph
+G = nx.powerlaw_cluster_graph(50, 3, 0.4)
+pos = nx.spring_layout(G)
+nx.draw(G, pos=pos, node_size=50, edgecolors='k', cmap='hsv')
+plt.savefig("original_graph.png")
+plt.clf()
 
-# Make Networkx graph of a hexagon
-G = nx.Graph()
-G.add_edges_from([(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (0, 6)])
 n_edges = len(G.edges)
 
 # initial value of Lagrange parameter
@@ -40,14 +44,23 @@ lagrange = max(colors)
 # have the effect of minimizing the number of colors used.
 # We penalize edge connections by the Lagrange parameter, to encourage
 # connected nodes to have different colors.
+print("\nBuilding discrete model...")
+
+# Initialize the DQM object
+dqm = DiscreteQuadraticModel()
+
+# Add the variables
 for p in G.nodes:
     dqm.add_variable(num_colors, label=p)
+
+# Add the biases
 for p in G.nodes:
     dqm.set_linear(p, colors)
 for p0, p1 in G.edges:
     dqm.set_quadratic(p0, p1, {(c, c): lagrange for c in colors})
 
 # Initialize the DQM solver
+print("\nRunning model on DQM sampler...")
 sampler = LeapHybridDQMSampler()
 
 # Solve the problem using the DQM solver
@@ -55,7 +68,10 @@ sampleset = sampler.sample_dqm(dqm, label='Example - Graph Coloring')
 
 # get the first solution, and print it
 sample = sampleset.first.sample
-energy = sampleset.first.energy
+node_colors = [sample[i] for i in G.nodes()]
+nx.draw(G, pos=pos, node_color=node_colors, node_size=50, edgecolors='k', cmap='hsv')
+plt.savefig('result_graph.png')
+# energy = sampleset.first.energy
 
 # check that colors are different
 valid = True
@@ -64,6 +80,9 @@ for edge in G.edges:
     if sample[i] == sample[j]:
         valid = False
         break
-print("Solution: ", sample)
-print("Solution energy: ", energy)
-print("Solution validity: ", valid)
+# print("Solution: ", sample)
+# print("Solution energy: ", energy)
+print("\nSolution validity: ", valid)
+
+colors_used = max(sample.values())+1
+print("Colors required:", colors_used, "\n")
