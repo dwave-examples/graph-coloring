@@ -6,7 +6,7 @@ import networkx as nx
 from dimod import DiscreteQuadraticModel
 from dwave.system import LeapHybridDQMSampler
 
-# Data file from https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html
+# Data file from https://www12.statcan.gc.ca/census-recensement/2011/geo/bound-limit/bound-limit-2011-eng.cfm
 
 def build_map(shp_file):
 
