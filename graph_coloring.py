@@ -15,7 +15,13 @@
 import networkx as nx
 from dimod import DiscreteQuadraticModel
 from dwave.system import LeapHybridDQMSampler
-import matplotlib.pyplot as plt
+import matplotlib
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    matplotlib.use("agg")
+    import matplotlib.pyplot as plt
 
 # Graph coloring with DQM solver
 
@@ -33,8 +39,6 @@ pos = nx.spring_layout(G)
 nx.draw(G, pos=pos, node_size=50, edgecolors='k', cmap='hsv')
 plt.savefig("original_graph.png")
 plt.clf()
-
-n_edges = len(G.edges)
 
 # initial value of Lagrange parameter
 lagrange = max(colors)
@@ -54,10 +58,10 @@ for p in G.nodes:
     dqm.add_variable(num_colors, label=p)
 
 # Add the biases
-for p in G.nodes:
-    dqm.set_linear(p, colors)
-for p0, p1 in G.edges:
-    dqm.set_quadratic(p0, p1, {(c, c): lagrange for c in colors})
+for v in G.nodes:
+    dqm.set_linear(v, colors)
+for u, v in G.edges:
+    dqm.set_quadratic(u, v, {(c, c): lagrange for c in colors})
 
 # Initialize the DQM solver
 print("\nRunning model on DQM sampler...")
@@ -70,8 +74,7 @@ sampleset = sampler.sample_dqm(dqm, label='Example - Graph Coloring')
 sample = sampleset.first.sample
 node_colors = [sample[i] for i in G.nodes()]
 nx.draw(G, pos=pos, node_color=node_colors, node_size=50, edgecolors='k', cmap='hsv')
-plt.savefig('result_graph.png')
-# energy = sampleset.first.energy
+plt.savefig('graph_result.png')
 
 # check that colors are different
 valid = True
@@ -80,9 +83,7 @@ for edge in G.edges:
     if sample[i] == sample[j]:
         valid = False
         break
-# print("Solution: ", sample)
-# print("Solution energy: ", energy)
 print("\nSolution validity: ", valid)
 
 colors_used = max(sample.values())+1
-print("Colors required:", colors_used, "\n")
+print("\nColors required:", colors_used, "\n")
