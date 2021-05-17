@@ -32,5 +32,11 @@ class IntegrationTests(unittest.TestCase):
         with self.subTest(msg="Verify if solution validity:  True \n"):
             self.assertIn("Solution validity:  True".upper(), output)
 
+    def test_map_coloring(self):
+        """run map_coloring.py and check that nothing crashes"""
+
+        demo_file = os.path.join(project_dir, 'map_coloring.py')
+        subprocess.check_output([sys.executable, demo_file])
+
 if __name__ == '__main__':
     unittest.main()
