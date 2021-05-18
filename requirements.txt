@@ -4,3 +4,5 @@ geopandas==0.8.2; python_version=='3.5'
 
 matplotlib==3.3.4; python_version>'3.5'
 matplotlib==3.0.3; python_version=='3.5'
+
+descartes==1.1.0; python_version=='3.5'
