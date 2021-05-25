@@ -16,7 +16,8 @@ from collections import defaultdict
 import argparse
 import sys
 
-import geopandas
+from descartes import PolygonPatch
+import shapefile
 import matplotlib
 import networkx as nx
 from dimod import DiscreteQuadraticModel
@@ -28,30 +29,25 @@ except ImportError:
     matplotlib.use("agg")
     import matplotlib.pyplot as plt
 
-# Data file from https://www12.statcan.gc.ca/census-recensement/2011/geo/bound-limit/bound-limit-2011-eng.cfm
-
 def read_in_args(args):
-    """ Read in user specified parameters."""
+    """Read in user specified parameters."""
 
     # Set up user-specified optional arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--country", default='usa', choices=['usa', 'canada'], help='Color either USA or Canada map (default: %(default)s)')
-
     return parser.parse_args(args)
 
-def build_map(shp_file):
-    """ Builds country map from shp file into geopandas dataframe."""
+def get_state_info(shp_file):
+    """Reads shp_file and returns state records (includes state info and 
+    geometry) and each state's corresponding neighbors"""
 
-    print("\nBuilding map...")
+    print("\nReading shp file...")
 
-    states = geopandas.read_file(shp_file)
+    sf = shapefile.Reader(shp_file)
 
     state_neighbors = defaultdict(list)
-    for _, state in states.iterrows():   
-        
-        # add entry to dictionary
+    for state in sf.records():
         neighbors = state['NEIGHBORS']
-
         try:
             neighbors = neighbors.split(",")
         except:
@@ -59,18 +55,10 @@ def build_map(shp_file):
 
         state_neighbors[state['NAME']] = neighbors
 
-    return states, state_neighbors
-
-def draw_solid_map(states):
-    """ Draw map in one color."""
-
-    states.plot()
-    plt.show()
-
-    return
+    return sf.shapeRecords(), state_neighbors
 
 def build_graph(state_neighbors):
-    """ Build graph corresponding to neighbor relation."""
+    """Build graph corresponding to neighbor relation."""
 
     print("\nBuilding graph from map...")
 
@@ -82,7 +70,7 @@ def build_graph(state_neighbors):
     return G
 
 def build_dqm(G, num_colors):
-    """ Build DQM model."""
+    """Build DQM model."""
 
     print("\nBuilding discrete quadratic model...")
 
@@ -109,7 +97,7 @@ def build_dqm(G, num_colors):
     return dqm
 
 def run_hybrid_solver(dqm):
-    """ Solve DQM using hybrid solver through the cloud."""
+    """Solve DQM using hybrid solver through the cloud."""
 
     print("\nRunning hybrid sampler...")
 
@@ -121,22 +109,38 @@ def run_hybrid_solver(dqm):
 
     return sampleset
 
-def draw_sample(sample, states):
-    """ Draw best result found."""
+def plot_map(sample, state_records, colors):
+    """Plot results and save map file.
+    
+    Args:
+        sample (dict):
+            Sample containing a solution. Each key is a state and each value 
+            is an int representing the state's color.
+
+        state_records (shapefile.ShapeRecords):
+            Records retrieved from the problem shp file.
+
+        colors (list):
+            List of colors to use when plotting.
+    """
 
     print("\nProcessing sample...")
 
-    states['COLOR'] = [0] * states.shape[0]
+    fig = plt.figure()
+    ax = fig.gca()
 
-    for key, val in sample.items():
-        row = states.index[states['NAME'] == key]
-        states.at[row, 'COLOR'] = val
+    for record in state_records:
+        state_name = record.record['NAME']
+        color = colors[sample[state_name]]
+        poly_geo = record.shape.__geo_interface__
+        ax.add_patch(PolygonPatch(poly_geo, fc=color, alpha=0.8, lw=0))
 
-    states.plot(column='COLOR')
+    ax.axis('scaled')
     plt.axis('off')
-    plt.savefig("map_result.png")
 
-    return
+    fname = "map_result.png"
+    print("\nSaving results in {}...".format(fname))
+    plt.savefig(fname, bbox_inches='tight', dpi=300)
 
 # ------- Main program -------
 if __name__ == "__main__":
@@ -150,11 +154,12 @@ if __name__ == "__main__":
         print("\nUSA map coloring demo.")
         input_shp_file = 'shp_files/usa/usa.shp'
 
-    states, state_neighbors = build_map(input_shp_file)
+    state_records, state_neighbors = get_state_info(input_shp_file)
 
     G = build_graph(state_neighbors)
 
-    num_colors = 7
+    colors = ['purple', 'blue', 'green', 'yellow', 'orange', 'red', 'grey']
+    num_colors = len(colors)
 
     dqm = build_dqm(G, num_colors)
 
@@ -163,8 +168,7 @@ if __name__ == "__main__":
     # get the first solution, and print it
     sample = sampleset.first.sample
 
+    plot_map(sample, state_records, colors)
+
     colors_used = max(sample.values())+1
-
-    draw_sample(sample, states)
-
     print("\nColors required:", colors_used, "\n")

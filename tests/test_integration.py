@@ -21,7 +21,7 @@ import sys
 project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class IntegrationTests(unittest.TestCase):
-
+    @unittest.skipIf(os.getenv('SKIP_INT_TESTS'), "Skipping integration test.")
     def test_graph_coloring(self):
         file_path = os.path.join(project_dir, 'graph_coloring.py')
         output = subprocess.check_output([sys.executable, file_path])
@@ -32,8 +32,9 @@ class IntegrationTests(unittest.TestCase):
         with self.subTest(msg="Verify if solution validity:  True \n"):
             self.assertIn("Solution validity:  True".upper(), output)
 
+    @unittest.skipIf(os.getenv('SKIP_INT_TESTS'), "Skipping integration test.")
     def test_map_coloring(self):
-        """run map_coloring.py and check that nothing crashes"""
+        """Run map_coloring.py and check that nothing crashes"""
 
         demo_file = os.path.join(project_dir, 'map_coloring.py')
         subprocess.check_output([sys.executable, demo_file])
