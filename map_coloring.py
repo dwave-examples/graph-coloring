@@ -20,8 +20,8 @@ from descartes import PolygonPatch
 import shapefile
 import matplotlib
 import networkx as nx
-from dimod import DiscreteQuadraticModel
-from dwave.system import LeapHybridDQMSampler
+from dimod import CQM, Integer, quicksum
+from dwave.system import LeapHybridDQMSampler, LeapHybridCQMSampler
 
 try:
     import matplotlib.pyplot as plt
@@ -69,45 +69,44 @@ def build_graph(state_neighbors):
 
     return G
 
-def build_dqm(G, num_colors):
-    """Build DQM model."""
+def build_cqm(G, num_colors):
+    """Build CQM model."""
 
-    print("\nBuilding discrete quadratic model...")
+    print("\nBuilding constrained quadratic model...")
 
-    colors = range(num_colors)
+    # Intialize symbolic variables
+    vars = {n: Integer(n, upper_bound=num_colors-1) for n in G.nodes()}
 
-    # Initialize the DQM object
-    dqm = DiscreteQuadraticModel()
+    # Initialize the CQM object
+    cqm = CQM()
 
-    # initial value of Lagrange parameter
-    lagrange = max(colors)
+    # Build the objective: sum all colors values
+    cqm.set_objective(quicksum(vars.values()))
 
-    # Load the DQM. Define the variables, and then set biases and weights.
-    # We set the linear biases to favor lower-numbered colors; this will
-    # have the effect of minimizing the number of colors used.
-    # We penalize edge connections by the Lagrange parameter, to encourage
-    # connected nodes to have different colors.
-    for v in G.nodes:
-        dqm.add_variable(num_colors, label=v)
-    for v in G.nodes:
-        dqm.set_linear(v, colors)
+    # Build the constraints: edges have different color end points
     for u, v in G.edges:
-        dqm.set_quadratic(u, v, {(c, c): lagrange for c in colors})
+        cqm.add_constraint(vars[u]*vars[u]-2*vars[u]*vars[v]+vars[v]*vars[v] >= 1, label=f'{u}_{v}')
+    
+    # We have integer variables squared -> need to eliminate self-loops
+    cqm.substitute_self_loops()
 
-    return dqm
+    return cqm
 
-def run_hybrid_solver(dqm):
-    """Solve DQM using hybrid solver through the cloud."""
+def run_hybrid_solver(cqm):
+    """Solve CQM using hybrid solver through the cloud."""
 
     print("\nRunning hybrid sampler...")
 
-    # Initialize the DQM solver
-    sampler = LeapHybridDQMSampler()
+    # Initialize the CQM solver
+    sampler = LeapHybridCQMSampler()
 
-    # Solve the problem using the DQM solver
-    sampleset = sampler.sample_dqm(dqm, label='Example - Map Coloring')
+    # Solve the problem using the CQM solver
+    sampleset = sampler.sample_cqm(cqm, label='Example - Map Coloring')
+    print(sampleset)
+    
+    feasible_sampleset = sampleset.filter(lambda row: row.is_feasible)
 
-    return sampleset
+    return feasible_sampleset
 
 def plot_map(sample, state_records, colors):
     """Plot results and save map file.
@@ -161,12 +160,13 @@ if __name__ == "__main__":
     colors = ['purple', 'blue', 'green', 'yellow', 'orange', 'red', 'grey']
     num_colors = len(colors)
 
-    dqm = build_dqm(G, num_colors)
+    cqm = build_cqm(G, num_colors)
 
-    sampleset = run_hybrid_solver(dqm)
+    sampleset = run_hybrid_solver(cqm)
 
     # get the first solution, and print it
     sample = sampleset.first.sample
+    print(sample)
 
     plot_map(sample, state_records, colors)
 
