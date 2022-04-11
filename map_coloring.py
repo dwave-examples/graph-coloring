@@ -1,4 +1,4 @@
-# Copyright 2021 D-Wave Systems Inc.
+# Copyright 2022 D-Wave Systems Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ from descartes import PolygonPatch
 import shapefile
 import matplotlib
 import networkx as nx
-from dimod import CQM, Integer, quicksum
-from dwave.system import LeapHybridDQMSampler, LeapHybridCQMSampler
+from dimod import CQM, BinaryQuadraticModel
+from dwave.system import LeapHybridCQMSampler
 
 try:
     import matplotlib.pyplot as plt
@@ -43,7 +43,7 @@ def get_state_info(shp_file):
 
     print("\nReading shp file...")
 
-    sf = shapefile.Reader(shp_file)
+    sf = shapefile.Reader(shp_file, encoding='CP1252')
 
     state_neighbors = defaultdict(list)
     for state in sf.records():
@@ -74,21 +74,26 @@ def build_cqm(G, num_colors):
 
     print("\nBuilding constrained quadratic model...")
 
-    # Intialize symbolic variables
-    vars = {n: Integer(n, upper_bound=num_colors-1) for n in G.nodes()}
-
     # Initialize the CQM object
     cqm = CQM()
 
     # Build the objective: sum all colors values
-    cqm.set_objective(quicksum(vars.values()))
+    obj = BinaryQuadraticModel('BINARY')
+    for n in G.nodes():
+        for i in range(num_colors):
+            obj.set_linear((n,i), i)
+    cqm.set_objective(obj)
 
+    # Add constraint to make variables discrete
+    for n in G.nodes():
+        cqm.add_discrete([(n,i) for i in range(num_colors)])
+  
     # Build the constraints: edges have different color end points
     for u, v in G.edges:
-        cqm.add_constraint(vars[u]*vars[u]-2*vars[u]*vars[v]+vars[v]*vars[v] >= 1, label=f'{u}_{v}')
-    
-    # We have integer variables squared -> need to eliminate self-loops
-    cqm.substitute_self_loops()
+        for i in range(num_colors):
+            c = BinaryQuadraticModel('BINARY')
+            c.set_quadratic((u,i),(v,i),1)
+            cqm.add_constraint(c == 0)
 
     return cqm
 
@@ -102,11 +107,13 @@ def run_hybrid_solver(cqm):
 
     # Solve the problem using the CQM solver
     sampleset = sampler.sample_cqm(cqm, label='Example - Map Coloring')
-    print(sampleset)
-    
     feasible_sampleset = sampleset.filter(lambda row: row.is_feasible)
 
-    return feasible_sampleset
+    ss = feasible_sampleset.first.sample
+
+    soln = {key[0]: key[1] for key, val in ss.items() if val == 1.0}
+
+    return soln
 
 def plot_map(sample, state_records, colors):
     """Plot results and save map file.
@@ -162,11 +169,7 @@ if __name__ == "__main__":
 
     cqm = build_cqm(G, num_colors)
 
-    sampleset = run_hybrid_solver(cqm)
-
-    # get the first solution, and print it
-    sample = sampleset.first.sample
-    print(sample)
+    sample = run_hybrid_solver(cqm)
 
     plot_map(sample, state_records, colors)
 
