@@ -55,9 +55,10 @@ variable `(n, i)` equals 1 then we assign node `n` color `i`.
 ### Objective
 
 We set the objective in order to use as few colors as possible. We assume a
-very simple relationship: variable (node, k) is given a coefficient of k in our
-objective function. This will encourage the solver to use the lowest numbered
-colors as much as possible by minimizing the overall number of colors used.
+very simple relationship: variable `(node, k)` is given a coefficient of k in
+our objective function. This will encourage the solver to use the lowest
+numbered colors as much as possible by minimizing the overall number of colors
+used.
 
 ### Constraints
 
