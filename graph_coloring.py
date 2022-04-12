@@ -14,7 +14,7 @@
 
 import matplotlib
 import networkx as nx
-from dimod import CQM, BinaryQuadraticModel
+from dimod import CQM, BinaryQuadraticModel, Binary, quicksum
 from dwave.system import LeapHybridCQMSampler
 
 try:
@@ -44,23 +44,20 @@ def build_cqm(G, num_colors):
     # Initialize the CQM object
     cqm = CQM()
 
+    # Build CQM variables
+    colors = {n: {c: Binary((n,c)) for c in range(num_colors)} for n in G.nodes}
+
     # Build the objective: sum all colors values
-    obj = BinaryQuadraticModel('BINARY')
-    for n in G.nodes():
-        for i in range(num_colors):
-            obj.set_linear((n,i), i)
-    cqm.set_objective(obj)
+    cqm.set_objective(quicksum([c*colors[n][c] for n in G.nodes for c in range(num_colors)]))
 
     # Add constraint to make variables discrete
     for n in G.nodes():
-        cqm.add_discrete([(n,i) for i in range(num_colors)])
+        cqm.add_discrete([(n,c) for c in range(num_colors)])
   
     # Build the constraints: edges have different color end points
     for u, v in G.edges:
-        for i in range(num_colors):
-            c = BinaryQuadraticModel('BINARY')
-            c.set_quadratic((u,i),(v,i),1)
-            cqm.add_constraint(c == 0)
+        for c in range(num_colors):
+            cqm.add_constraint(colors[u][c]*colors[v][c] == 0)
 
     return cqm
 
