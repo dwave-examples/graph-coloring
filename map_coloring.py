@@ -20,7 +20,7 @@ from descartes import PolygonPatch
 import shapefile
 import matplotlib
 import networkx as nx
-from dimod import CQM, BinaryQuadraticModel
+from dimod import ConstrainedQuadraticModel, BinaryQuadraticModel
 from dwave.system import LeapHybridCQMSampler
 
 try:
@@ -75,7 +75,7 @@ def build_cqm(G, num_colors):
     print("\nBuilding constrained quadratic model...")
 
     # Initialize the CQM object
-    cqm = CQM()
+    cqm = ConstrainedQuadraticModel()
 
     # Build the objective: sum all colors values
     obj = BinaryQuadraticModel('BINARY')

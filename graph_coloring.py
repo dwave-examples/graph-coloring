@@ -14,7 +14,7 @@
 
 import matplotlib
 import networkx as nx
-from dimod import CQM, BinaryQuadraticModel, Binary, quicksum
+from dimod import ConstrainedQuadraticModel, Binary, quicksum
 from dwave.system import LeapHybridCQMSampler
 
 try:
@@ -42,7 +42,7 @@ def build_cqm(G, num_colors):
     print("\nBuilding constrained quadratic model...")
 
     # Initialize the CQM object
-    cqm = CQM()
+    cqm = ConstrainedQuadraticModel()
 
     # Build CQM variables
     colors = {n: {c: Binary((n,c)) for c in range(num_colors)} for n in G.nodes}
@@ -95,7 +95,10 @@ def plot_soln(sample, pos):
 
     node_colors = [sample[i] for i in G.nodes()]
     nx.draw(G, pos=pos, node_color=node_colors, node_size=50, edgecolors='k', cmap='hsv')
-    plt.savefig('graph_result.png')
+    fname = 'graph_result.png'
+    plt.savefig(fname)
+
+    print("\nSaving results in {}...".format(fname))
 
 # ------- Main program -------
 if __name__ == "__main__":
