@@ -77,28 +77,21 @@ def build_cqm(G, num_colors):
     # Initialize the CQM object
     cqm = ConstrainedQuadraticModel()
 
-    # Build the objective: sum all colors values
-    obj = BinaryQuadraticModel('BINARY')
-    for n in G.nodes():
-        for i in range(num_colors):
-            obj.set_linear((n,i), i)
-    cqm.set_objective(obj)
-
     # Add constraint to make variables discrete
     for n in G.nodes():
-        cqm.add_discrete([(n,i) for i in range(num_colors)])
+        cqm.add_discrete([(n, i) for i in range(num_colors)])
   
     # Build the constraints: edges have different color end points
     for u, v in G.edges:
         for i in range(num_colors):
             c = BinaryQuadraticModel('BINARY')
-            c.set_quadratic((u,i),(v,i),1)
+            c.set_quadratic((u, i), (v, i), 1)
             cqm.add_constraint(c == 0)
 
     return cqm
 
 def run_hybrid_solver(cqm):
-    """Solve CQM using hybrid solver through the cloud."""
+    """Solve CQM using LeapHybridCQMSampler through the cloud."""
 
     print("\nRunning hybrid sampler...")
 
@@ -109,9 +102,13 @@ def run_hybrid_solver(cqm):
     sampleset = sampler.sample_cqm(cqm, label='Example - Map Coloring')
     feasible_sampleset = sampleset.filter(lambda row: row.is_feasible)
 
-    ss = feasible_sampleset.first.sample
+    try:
+        sample = feasible_sampleset.first.sample
+    except:
+        print("\nNo feasible solutions found.")
+        exit()
 
-    soln = {key[0]: key[1] for key, val in ss.items() if val == 1.0}
+    soln = {key[0]: key[1] for key, val in sample.items() if val == 1.0}
 
     return soln
 
@@ -164,8 +161,8 @@ if __name__ == "__main__":
 
     G = build_graph(state_neighbors)
 
-    colors = ['purple', 'blue', 'green', 'yellow', 'orange', 'red', 'grey']
-    num_colors = len(colors)
+    colors = ['red', 'blue', 'green', 'yellow']
+    num_colors = 4
 
     cqm = build_cqm(G, num_colors)
 
@@ -174,4 +171,4 @@ if __name__ == "__main__":
     plot_map(sample, state_records, colors)
 
     colors_used = max(sample.values())+1
-    print("\nColors required:", colors_used, "\n")
+    print("\nColors used:", colors_used, "\n")

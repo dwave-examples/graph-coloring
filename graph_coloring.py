@@ -32,7 +32,6 @@ def build_graph(num_nodes):
     pos = nx.spring_layout(G)
     nx.draw(G, pos=pos, node_size=50, edgecolors='k', cmap='hsv')
     plt.savefig("original_graph.png")
-    plt.clf()
 
     return G, pos
 
@@ -45,14 +44,11 @@ def build_cqm(G, num_colors):
     cqm = ConstrainedQuadraticModel()
 
     # Build CQM variables
-    colors = {n: {c: Binary((n,c)) for c in range(num_colors)} for n in G.nodes}
-
-    # Build the objective: sum all colors values
-    cqm.set_objective(quicksum([c*colors[n][c] for n in G.nodes for c in range(num_colors)]))
+    colors = {n: {c: Binary((n, c)) for c in range(num_colors)} for n in G.nodes}
 
     # Add constraint to make variables discrete
     for n in G.nodes():
-        cqm.add_discrete([(n,c) for c in range(num_colors)])
+        cqm.add_discrete([(n, c) for c in range(num_colors)])
   
     # Build the constraints: edges have different color end points
     for u, v in G.edges:
@@ -73,9 +69,13 @@ def run_hybrid_solver(cqm):
     sampleset = sampler.sample_cqm(cqm, label='Example - Graph Coloring')
     feasible_sampleset = sampleset.filter(lambda row: row.is_feasible)
 
-    ss = feasible_sampleset.first.sample
+    try:
+        sample = feasible_sampleset.first.sample
+    except:
+        print("\nNo feasible solutions found.")
+        exit()
 
-    soln = {key[0]: key[1] for key, val in ss.items() if val == 1.0}
+    soln = {key[0]: key[1] for key, val in sample.items() if val == 1.0}
 
     return soln
 
@@ -103,10 +103,10 @@ def plot_soln(sample, pos):
 # ------- Main program -------
 if __name__ == "__main__":
 
-    num_colors = 7
     num_nodes = 50
 
     G, pos = build_graph(num_nodes)
+    num_colors = max(d for _, d in G.degree())-1
 
     cqm = build_cqm(G, num_colors)
 
@@ -115,4 +115,4 @@ if __name__ == "__main__":
     plot_soln(sample, pos)
 
     colors_used = max(sample.values())+1
-    print("\nColors required:", colors_used, "\n")
+    print("\nColors used:", colors_used, "\n")

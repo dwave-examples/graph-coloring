@@ -1,3 +1,7 @@
+[![Linux/Mac/Windows build status](
+   https://circleci.com/gh/dwave-examples/graph-coloring.svg?style=svg)](
+   https://circleci.com/gh/dwave-examples/graph-coloring)
+
 # Graph Coloring
 
 A demo of graph coloring using Leap's hybrid constrained quadratic model (CQM)
@@ -5,14 +9,13 @@ solver.
 
 ![Original Plot](readme_imgs/not_color_yet.png)
 
-Figure: The graph that we want to color with no neighboring nodes the same.
+Figure: The graph that we want to color with no neighboring nodes the same color.
 
 We want to color this graph so that no neighboring nodes have the same color.
-This is a well-known hard problem (https://en.wikipedia.org/wiki/Graph_coloring)
-and an alternative formulation is available in this Collection of Code Examples
-(https://github.com/dwave-examples/map-coloring). In this example, we formulate
-this problem as a constrained quadratic model (CQM) and solve it using the
-hybrid CQM solver.
+[Graph coloring](https://en.wikipedia.org/wiki/Graph_coloring) is a well-known hard problem and an alternative formulation is
+available in this collection of code examples (see [Map Coloring](https://github.com/dwave-examples/map-coloring)). In this example,
+we formulate this problem as a constrained quadratic model (CQM) and solve it
+using the hybrid CQM solver.
 
 ## Usage
 
@@ -44,21 +47,16 @@ below.
 ## Code Overview
 
 The hybrid CQM solver accepts problems expressed in terms of a
-ConstrainedQuadraticModel object. A CQM consists of an objective and constraints, both formulated in this example as Binary Quadratic Models (BQMs).
+ConstrainedQuadraticModel object. A CQM consists of an objective and/or
+constraints, both formulated as Quadratic Models (BQMs). In this model, the
+problem is formulated as a constraint satisfaction problem and does not have an
+objective.
 
-For this problem, define binary variables as ordered pairs (node, color). For
+In this problem, we define binary variables as ordered pairs (node, color). For
 example, the pair `(1, 2)` corresponds to node 1 and color 2. In the map
 coloring example, the pair will look like `('Maryland', 0)` to indicate that
 the state of Maryland should be colored with color 0 in the USA map. If
 variable `(n, i)` equals 1 then we assign node `n` color `i`.
-
-### Objective
-
-We set the objective in order to use as few colors as possible. We assume a
-very simple relationship: variable `(node, k)` is given a coefficient of k in
-our objective function. This will encourage the solver to use the lowest
-numbered colors as much as possible by minimizing the overall number of colors
-used.
 
 ### Constraints
 
@@ -66,21 +64,21 @@ In this example, we have two groups of constraints.
 
 #### Discrete Constraints
 
-We defined our CQM using binary variables `(n, i)` to indicate assigning color
-`i` to node `n`. Since each node must be assigned exactly one color, we need to
-add a set of discrete constraints: one for each node `n`.
+Since each node must be assigned exactly one color, we need a set of discrete
+constraints: one constraint for each node `n` so that it is assigned exactly
+one color.
 
 #### Edge Constraints
 
 Our assignment of colors to nodes must satisfy the constraint that no edge has
 endpoints with the same color. In terms of map coloring, this is equivalent to
-no adjacent region having the same color assigned.
+the constraint that no adjacent regions having the same colors assigned.
 
-To build this constraint, we consider each edge `(u,v)` independently, and each
-possible color independently as well. For edge `(u,v)` and color `i`, we want
-to ensure that binary variables `(u,i)` and `(v,i)` are not both equal to 1.
-All other combinations are acceptable. We can determine an expression for this
-using a truth table, as shown below.
+To build this constraint, we consider each edge `(u, v)` independently, and
+each possible color independently as well. For edge `(u, v)` and color `i`, we
+want to ensure that binary variables `(u, i)` and `(v, i)` are not both equal
+to 1. All other combinations are acceptable. We can determine an expression for
+this using a truth table, as shown below.
 
 |`(u,i)`|`(v,i)`|Acceptable?|
 |-----|------|-----|
