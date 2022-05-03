@@ -106,7 +106,7 @@ if __name__ == "__main__":
     num_nodes = 50
 
     G, pos = build_graph(num_nodes)
-    num_colors = max(d for _, d in G.degree())-1
+    num_colors = max(d for _, d in G.degree()) + 1
 
     cqm = build_cqm(G, num_colors)
 
