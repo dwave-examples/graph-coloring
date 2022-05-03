@@ -48,7 +48,7 @@ below.
 
 The hybrid CQM solver accepts problems expressed in terms of a
 ConstrainedQuadraticModel object. A CQM consists of an objective and/or
-constraints, both formulated as Quadratic Models (BQMs). In this model, the
+constraints, both formulated as Quadratic Models (QMs). In this model, the
 problem is formulated as a constraint satisfaction problem and does not have an
 objective.
 
