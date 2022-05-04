@@ -1,4 +1,4 @@
-# Copyright 2021 D-Wave Systems Inc.
+# Copyright 2022 D-Wave Systems Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ from descartes import PolygonPatch
 import shapefile
 import matplotlib
 import networkx as nx
-from dimod import DiscreteQuadraticModel
-from dwave.system import LeapHybridDQMSampler
+from dimod import ConstrainedQuadraticModel, BinaryQuadraticModel
+from dwave.system import LeapHybridCQMSampler
 
 try:
     import matplotlib.pyplot as plt
@@ -43,7 +43,7 @@ def get_state_info(shp_file):
 
     print("\nReading shp file...")
 
-    sf = shapefile.Reader(shp_file)
+    sf = shapefile.Reader(shp_file, encoding='CP1252')
 
     state_neighbors = defaultdict(list)
     for state in sf.records():
@@ -69,45 +69,48 @@ def build_graph(state_neighbors):
 
     return G
 
-def build_dqm(G, num_colors):
-    """Build DQM model."""
+def build_cqm(G, num_colors):
+    """Build CQM model."""
 
-    print("\nBuilding discrete quadratic model...")
+    print("\nBuilding constrained quadratic model...")
 
-    colors = range(num_colors)
+    # Initialize the CQM object
+    cqm = ConstrainedQuadraticModel()
 
-    # Initialize the DQM object
-    dqm = DiscreteQuadraticModel()
-
-    # initial value of Lagrange parameter
-    lagrange = max(colors)
-
-    # Load the DQM. Define the variables, and then set biases and weights.
-    # We set the linear biases to favor lower-numbered colors; this will
-    # have the effect of minimizing the number of colors used.
-    # We penalize edge connections by the Lagrange parameter, to encourage
-    # connected nodes to have different colors.
-    for v in G.nodes:
-        dqm.add_variable(num_colors, label=v)
-    for v in G.nodes:
-        dqm.set_linear(v, colors)
+    # Add constraint to make variables discrete
+    for n in G.nodes():
+        cqm.add_discrete([(n, i) for i in range(num_colors)])
+  
+    # Build the constraints: edges have different color end points
     for u, v in G.edges:
-        dqm.set_quadratic(u, v, {(c, c): lagrange for c in colors})
+        for i in range(num_colors):
+            c = BinaryQuadraticModel('BINARY')
+            c.set_quadratic((u, i), (v, i), 1)
+            cqm.add_constraint(c == 0)
 
-    return dqm
+    return cqm
 
-def run_hybrid_solver(dqm):
-    """Solve DQM using hybrid solver through the cloud."""
+def run_hybrid_solver(cqm):
+    """Solve CQM using LeapHybridCQMSampler through the cloud."""
 
     print("\nRunning hybrid sampler...")
 
-    # Initialize the DQM solver
-    sampler = LeapHybridDQMSampler()
+    # Initialize the CQM solver
+    sampler = LeapHybridCQMSampler()
 
-    # Solve the problem using the DQM solver
-    sampleset = sampler.sample_dqm(dqm, label='Example - Map Coloring')
+    # Solve the problem using the CQM solver
+    sampleset = sampler.sample_cqm(cqm, label='Example - Map Coloring')
+    feasible_sampleset = sampleset.filter(lambda row: row.is_feasible)
 
-    return sampleset
+    try:
+        sample = feasible_sampleset.first.sample
+    except:
+        print("\nNo feasible solutions found.")
+        exit()
+
+    soln = {key[0]: key[1] for key, val in sample.items() if val == 1.0}
+
+    return soln
 
 def plot_map(sample, state_records, colors):
     """Plot results and save map file.
@@ -158,17 +161,14 @@ if __name__ == "__main__":
 
     G = build_graph(state_neighbors)
 
-    colors = ['purple', 'blue', 'green', 'yellow', 'orange', 'red', 'grey']
-    num_colors = len(colors)
+    colors = ['red', 'blue', 'green', 'yellow']
+    num_colors = 4
 
-    dqm = build_dqm(G, num_colors)
+    cqm = build_cqm(G, num_colors)
 
-    sampleset = run_hybrid_solver(dqm)
-
-    # get the first solution, and print it
-    sample = sampleset.first.sample
+    sample = run_hybrid_solver(cqm)
 
     plot_map(sample, state_records, colors)
 
     colors_used = max(sample.values())+1
-    print("\nColors required:", colors_used, "\n")
+    print("\nColors used:", colors_used, "\n")
