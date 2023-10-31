@@ -1,6 +1,6 @@
 dwave-ocean-sdk>=4.4.0
 
-matplotlib==3.3.4
+matplotlib~=3.0
 
 descartes==1.1.0
 pyshp==2.1.3
