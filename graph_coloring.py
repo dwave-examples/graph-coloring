@@ -30,7 +30,7 @@ def build_graph(num_nodes):
 
     G = nx.powerlaw_cluster_graph(num_nodes, 3, 0.4)
     pos = nx.spring_layout(G)
-    nx.draw(G, pos=pos, node_size=50, edgecolors='k', cmap='hsv')
+    nx.draw(G, pos=pos, node_size=50, edgecolors='k')
     plt.savefig("original_graph.png")
 
     return G, pos
